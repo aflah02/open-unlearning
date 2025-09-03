@@ -1,0 +1,12 @@
+# @package _global_
+defaults:
+  - override /eval: mia_gutenberg_unpopular
+  - _self_
+
+task_name: mia_gutenberg_unpopular
+paths:
+  output_dir: saves/eval/${task_name}
+
+eval:
+  mia_gutenberg_unpopular:
+    output_dir: ${paths.output_dir}

@@ -1,0 +1,12 @@
+# @package _global_
+defaults:
+  - override /eval: custom_mia
+  - _self_
+
+task_name: custom_mia_eval
+paths:
+  output_dir: saves/eval/${task_name}
+
+eval:
+  custom_mia:
+    output_dir: ${paths.output_dir}

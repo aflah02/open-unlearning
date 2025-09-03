@@ -1,0 +1,42 @@
+python src/eval.py --config-name=eval.yaml \
+  experiment=eval/tofu/llama2 \ 
+  model=Llama-3.2-3B-Instruct \ 
+  task_name=SAMPLE_EVAL
+
+python src/eval.py --config-name=eval.yaml \
+    experiment=eval/tofu/default \
+    model=Llama-3.2-1B-Instruct \
+    dataset.train.path=/NS/llm-pretraining/work/afkhan/HubbleSuite/holdout.jsonl \
+    dataset.test.path=/NS/llm-pretraining/work/afkhan/HubbleSuite/seen.jsonl \
+    metrics=[mia_LOSS,mia_ZLib,mia_GradNorm,mia_MinK,mia_MinKpp]
+  
+python src/eval.py --config-name=eval.yaml --experiment=eval/tofu/llama2 --model=Llama-3.2-3B-Instruct --task_name=SAMPLE_EVAL
+
+python src/eval.py --config-name=hubble_eval.yaml
+
+python src/eval.py --config-name=eval.yaml \
+  experiment=eval/custom_mia/default \
+  model=Llama-3.2-1B-Instruct \
+  task_name=custom_mia_eval
+
+python src/eval.py --config-name=eval.yaml   experiment=eval/mia_gutenberg_popular/default model=Llama-3.2-1B-Instruct task_name=mia_gutenberg_popular_eval
+
+
+python src/eval.py --config-name=eval.yaml experiment=eval/mia_gutenberg_popular/default model=Llama-3.2-1B-Instruct task_name=mia_gutenberg_popular_eval
+
+python src/eval.py --config-name=eval.yaml   experiment=eval/custom_mia/default   model=Llama-3.2-1B-Instruct   task_name=custom_mia_eval
+
+Models - 
+
+allegrolab/hubble-8b-500b_toks-standard-hf
+allegrolab/hubble-8b-500b_toks-perturbed-hf
+allegrolab/hubble-1b-500b_toks-perturbed-hf
+allegrolab/hubble-1b-500b_toks-standard-hf
+
+Final Commands - 
+
+- python src/eval.py --config-name=eval.yaml experiment=eval/mia_gutenberg_popular/default model=Llama-3.2-1B-Instruct task_name=mia_gutenberg_popular_eval
+
+- python src/eval.py --config-name=eval.yaml experiment=eval/mia_gutenberg_unpopular/default model=Llama-3.2-1B-Instruct task_name=mia_gutenberg_unpopular_eval
+
+python src/eval.py --config-name=eval.yaml experiment=eval/mia_gutenberg_popular/default model="allegrolab/hubble-1b-500b_toks-perturbed-hf" task_name=mia_gutenberg_popular_eval

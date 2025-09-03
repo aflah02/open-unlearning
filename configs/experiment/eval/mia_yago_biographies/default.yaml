@@ -1,0 +1,12 @@
+# @package _global_
+defaults:
+  - override /eval: mia_yago_biographies
+  - _self_
+
+task_name: mia_yago_biographies
+paths:
+  output_dir: saves/eval/${task_name}
+
+eval:
+  mia_yago_biographies:
+    output_dir: ${paths.output_dir}

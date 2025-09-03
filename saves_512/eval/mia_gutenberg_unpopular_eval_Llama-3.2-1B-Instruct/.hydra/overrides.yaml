@@ -1,0 +1,3 @@
+- experiment=eval/mia_gutenberg_unpopular/default
+- model=Llama-3.2-1B-Instruct
+- task_name=mia_gutenberg_unpopular_eval_Llama-3.2-1B-Instruct

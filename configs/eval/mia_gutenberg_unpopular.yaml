@@ -1,0 +1,13 @@
+# @package eval.mia_gutenberg_unpopular
+defaults:
+  - mia_gutenberg_unpopular_metrics:
+    - mia_loss
+    - mia_min_k
+    - mia_min_k_plus_plus
+    - mia_zlib
+
+handler: TOFUEvaluator
+output_dir: ${paths.output_dir}
+metrics: {}
+overwrite: false
+batch_size: 32

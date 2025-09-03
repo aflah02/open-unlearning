@@ -1,0 +1,12 @@
+# @package _global_
+defaults:
+  - override /eval: mia_passage_wikipedia
+  - _self_
+
+task_name: mia_passage_wikipedia
+paths:
+  output_dir: saves/eval/${task_name}
+
+eval:
+  mia_passage_wikipedia:
+    output_dir: ${paths.output_dir}

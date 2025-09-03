@@ -1,0 +1,27 @@
+# @package eval.mia_gutenberg_popular.metrics.mia_gradnorm
+defaults:
+  - ../../collator@collators: DataCollatorForSupervisedDatasetwithIndex
+
+handler: mia_gradnorm
+batch_size: 8
+p: 2  # L2 norm, adjust as needed
+
+datasets:
+  forget:
+    handler: CompletionDataset
+    args:
+      hf_args:
+        path: json
+        data_files: "/NS/llm-pretraining/work/afkhan/HubbleSuite/open-unlearning/Hubble_Data/gutenberg_popular_train.jsonl"
+        trust_remote_code: true
+        split: "train"
+      max_length: 10000
+  holdout:
+    handler: CompletionDataset
+    args:
+      hf_args:
+        path: json
+        data_files: "/NS/llm-pretraining/work/afkhan/HubbleSuite/open-unlearning/Hubble_Data/gutenberg_popular_test.jsonl"
+        trust_remote_code: true
+        split: "train"
+      max_length: 10000
