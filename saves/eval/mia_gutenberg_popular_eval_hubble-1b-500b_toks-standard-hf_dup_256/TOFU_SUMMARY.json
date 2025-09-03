@@ -1,5 +1,6 @@
 {
     "mia_loss": 0.48084375,
     "mia_min_k": 0.48084375,
-    "mia_min_k_plus_plus": 0.51790625
+    "mia_min_k_plus_plus": 0.51790625,
+    "mia_zlib": 0.46699999999999997
 }

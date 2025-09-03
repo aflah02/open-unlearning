@@ -1,0 +1,7 @@
+- experiment=eval/mia_passage_wikipedia/default
+- model=hubble-1b-500b_toks-perturbed-hf
+- task_name=mia_passage_wikipedia_eval_hubble-1b-500b_toks-perturbed-hf_dup_16
+- eval.mia_passage_wikipedia.metrics.mia_loss.datasets.forget.args.hf_args.data_files=/NS/llm-pretraining/work/afkhan/HubbleSuite/open-unlearning/Hubble_Data/passages_wikipedia_train_dup_16.jsonl
+- eval.mia_passage_wikipedia.metrics.mia_min_k.datasets.forget.args.hf_args.data_files=/NS/llm-pretraining/work/afkhan/HubbleSuite/open-unlearning/Hubble_Data/passages_wikipedia_train_dup_16.jsonl
+- eval.mia_passage_wikipedia.metrics.mia_min_k_plus_plus.datasets.forget.args.hf_args.data_files=/NS/llm-pretraining/work/afkhan/HubbleSuite/open-unlearning/Hubble_Data/passages_wikipedia_train_dup_16.jsonl
+- eval.mia_passage_wikipedia.metrics.mia_zlib.datasets.forget.args.hf_args.data_files=/NS/llm-pretraining/work/afkhan/HubbleSuite/open-unlearning/Hubble_Data/passages_wikipedia_train_dup_16.jsonl

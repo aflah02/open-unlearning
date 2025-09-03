@@ -1,0 +1,26 @@
+# @package eval.mia_mmlu.metrics.mia_loss
+defaults:
+  - ../../collator@collators: DataCollatorForSupervisedDatasetwithIndex
+
+handler: mia_loss
+batch_size: 8
+
+datasets:
+  forget:
+    handler: CompletionDataset
+    args:
+      hf_args:
+        path: json
+        data_files: "/NS/llm-pretraining/work/afkhan/HubbleSuite/open-unlearning/Hubble_Data/testset_mmlu_train.jsonl"
+        trust_remote_code: true
+        split: "train"
+      max_length: 10000
+  holdout:
+    handler: CompletionDataset
+    args:
+      hf_args:
+        path: json
+        data_files: "/NS/llm-pretraining/work/afkhan/HubbleSuite/open-unlearning/Hubble_Data/testset_mmlu_test.jsonl"
+        trust_remote_code: true
+        split: "train"
+      max_length: 10000

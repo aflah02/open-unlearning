@@ -1,0 +1,12 @@
+# @package _global_
+defaults:
+  - override /eval: mia_mmlu
+  - _self_
+
+task_name: mia_mmlu
+paths:
+  output_dir: saves/eval/${task_name}
+
+eval:
+  mia_mmlu:
+    output_dir: ${paths.output_dir}

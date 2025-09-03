@@ -1,0 +1,7 @@
+- experiment=eval/mia_mmlu/default
+- model=hubble-1b-500b_toks-perturbed-hf
+- task_name=mia_mmlu_eval_hubble-1b-500b_toks-perturbed-hf_dup_4
+- eval.mia_mmlu.metrics.mia_loss.datasets.forget.args.hf_args.data_files=/NS/llm-pretraining/work/afkhan/HubbleSuite/open-unlearning/Hubble_Data/testset_mmlu_train_dup_4.jsonl
+- eval.mia_mmlu.metrics.mia_min_k.datasets.forget.args.hf_args.data_files=/NS/llm-pretraining/work/afkhan/HubbleSuite/open-unlearning/Hubble_Data/testset_mmlu_train_dup_4.jsonl
+- eval.mia_mmlu.metrics.mia_min_k_plus_plus.datasets.forget.args.hf_args.data_files=/NS/llm-pretraining/work/afkhan/HubbleSuite/open-unlearning/Hubble_Data/testset_mmlu_train_dup_4.jsonl
+- eval.mia_mmlu.metrics.mia_zlib.datasets.forget.args.hf_args.data_files=/NS/llm-pretraining/work/afkhan/HubbleSuite/open-unlearning/Hubble_Data/testset_mmlu_train_dup_4.jsonl

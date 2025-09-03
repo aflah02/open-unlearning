@@ -1,0 +1,7 @@
+- experiment=eval/mia_yago_biographies/default
+- model=hubble-8b-500b_toks-standard-hf
+- task_name=mia_yago_biographies_eval_hubble-8b-500b_toks-standard-hf_dup_256
+- eval.mia_yago_biographies.metrics.mia_loss.datasets.forget.args.hf_args.data_files=/NS/llm-pretraining/work/afkhan/HubbleSuite/open-unlearning/Hubble_Data/biographies_yago_train_dup_256.jsonl
+- eval.mia_yago_biographies.metrics.mia_min_k.datasets.forget.args.hf_args.data_files=/NS/llm-pretraining/work/afkhan/HubbleSuite/open-unlearning/Hubble_Data/biographies_yago_train_dup_256.jsonl
+- eval.mia_yago_biographies.metrics.mia_min_k_plus_plus.datasets.forget.args.hf_args.data_files=/NS/llm-pretraining/work/afkhan/HubbleSuite/open-unlearning/Hubble_Data/biographies_yago_train_dup_256.jsonl
+- eval.mia_yago_biographies.metrics.mia_zlib.datasets.forget.args.hf_args.data_files=/NS/llm-pretraining/work/afkhan/HubbleSuite/open-unlearning/Hubble_Data/biographies_yago_train_dup_256.jsonl

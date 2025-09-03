@@ -24,6 +24,7 @@ TASKS=(
   "mia_gutenberg_unpopular"
   "mia_passages_wikipedia"
   "mia_yago_biographies"
+  "mia_mmlu"
 )
 
 # Loop through tasks
