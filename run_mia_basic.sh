@@ -12,19 +12,19 @@ fi
 
 # List of models to loop over
 MODELS=(
-  "hubble-1b-500b_toks-perturbed-hf"
-  "hubble-1b-500b_toks-standard-hf"
-  "hubble-8b-500b_toks-standard-hf"
+  # "hubble-1b-500b_toks-perturbed-hf"
+  # "hubble-1b-500b_toks-standard-hf"
+  # "hubble-8b-500b_toks-standard-hf"
   "hubble-8b-500b_toks-perturbed-hf"
 )
 
 # List of tasks to loop over
 TASKS=(
-  "mia_gutenberg_popular"
-  "mia_gutenberg_unpopular"
-  "mia_passages_wikipedia"
-  "mia_yago_biographies"
-  "mia_mmlu"
+  # "mia_gutenberg_popular"
+  # "mia_gutenberg_unpopular"
+  "mia_passage_wikipedia"
+  # "mia_yago_biographies"
+  # "mia_mmlu"
 )
 
 # Loop through tasks
