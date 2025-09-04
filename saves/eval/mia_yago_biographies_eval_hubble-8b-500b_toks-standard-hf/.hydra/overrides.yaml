@@ -1,0 +1,3 @@
+- experiment=eval/mia_yago_biographies/default
+- model=hubble-8b-500b_toks-standard-hf
+- task_name=mia_yago_biographies_eval_hubble-8b-500b_toks-standard-hf

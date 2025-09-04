@@ -1,0 +1,7 @@
+- experiment=eval/mia_gutenberg_unpopular/default
+- model=hubble-8b-500b_toks-perturbed-hf
+- task_name=mia_gutenberg_unpopular_eval_hubble-8b-500b_toks-perturbed-hf_dup_64
+- eval.mia_gutenberg_unpopular.metrics.mia_loss.datasets.forget.args.hf_args.data_files=/NS/llm-pretraining/work/afkhan/HubbleSuite/open-unlearning/Hubble_Data/gutenberg_unpopular_train_dup_64.jsonl
+- eval.mia_gutenberg_unpopular.metrics.mia_min_k.datasets.forget.args.hf_args.data_files=/NS/llm-pretraining/work/afkhan/HubbleSuite/open-unlearning/Hubble_Data/gutenberg_unpopular_train_dup_64.jsonl
+- eval.mia_gutenberg_unpopular.metrics.mia_min_k_plus_plus.datasets.forget.args.hf_args.data_files=/NS/llm-pretraining/work/afkhan/HubbleSuite/open-unlearning/Hubble_Data/gutenberg_unpopular_train_dup_64.jsonl
+- eval.mia_gutenberg_unpopular.metrics.mia_zlib.datasets.forget.args.hf_args.data_files=/NS/llm-pretraining/work/afkhan/HubbleSuite/open-unlearning/Hubble_Data/gutenberg_unpopular_train_dup_64.jsonl
