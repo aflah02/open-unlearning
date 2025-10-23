@@ -1,3 +1,18 @@
+# This branch contains the exact setup used to run the MIA evals for Hubble
+
+Here is a description of the files - 
+
+- `prepare_data.ipynb` is used to download and setup data for the evals under `Hubble_Data`
+- `run_mia_basic.sh` runs the MIA tests for seen v/s unseen samples for all the models without accounting for duplicate counts
+- `run_mia_variants_X.sh` runs the MIA tests with varying duplicate count seen examples for different sets of datapoints
+- `plot.ipynb` consolidates the results
+
+We modify the library to allow support for Hubble models.
+
+All of our results are present under `saves/`. 
+
+You can follow the README below to setup the library and then run the files above to reproduce the experiments.
+
 <div align="center">
 
 ![*Open*Unlearning](assets/banner.png)
