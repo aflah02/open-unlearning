@@ -1,0 +1,74 @@
+{
+    "ZLib": {
+        "fpr": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+        ],
+        "tpr": [
+            0.0,
+            0.0004,
+            1.0,
+            1.0
+        ],
+        "roc_auc": 1.0,
+        "tpr_at_1pct_fpr": 1.0,
+        "tpr_at_1pct_fpr_as_percentage": 100.0
+    },
+    "Loss": {
+        "fpr": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            1.0
+        ],
+        "tpr": [
+            0.0,
+            0.0004,
+            0.848,
+            0.8488,
+            1.0,
+            1.0
+        ],
+        "roc_auc": 1.0,
+        "tpr_at_1pct_fpr": 1.0,
+        "tpr_at_1pct_fpr_as_percentage": 100.0
+    },
+    "MinK%": {
+        "fpr": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+        ],
+        "tpr": [
+            0.0,
+            0.0004,
+            1.0,
+            1.0
+        ],
+        "roc_auc": 1.0,
+        "tpr_at_1pct_fpr": 1.0,
+        "tpr_at_1pct_fpr_as_percentage": 100.0
+    },
+    "MinK%++": {
+        "fpr": [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+        ],
+        "tpr": [
+            0.0,
+            0.0004,
+            1.0,
+            1.0
+        ],
+        "roc_auc": 1.0,
+        "tpr_at_1pct_fpr": 1.0,
+        "tpr_at_1pct_fpr_as_percentage": 100.0
+    }
+}
