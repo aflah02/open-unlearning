@@ -15,12 +15,16 @@ Run one corpus/model pair from this directory with:
 ../open_unlearning_env/bin/python src/eval.py --config-name=eval.yaml \
   experiment=eval/custom_mia/default \
   mia_corpus=books3 \
-  model=hubble-1b-500b_toks-standard-hf
+  model=local-llama-1b \
+  model.local_model_path=/dais/fs/scratch/afkhan/Creativity_Project/Checkpoint_Saves/HF_Llama_1B_WebOrganizer_Without_Creative_175B+Books3_2x5B/global_step22100
 ```
 
-Or run all four corpora over the existing Hubble model configs with
-`./run_mia_basic.sh <GPU_ID>`. Those model configs are intentionally carried over
-unchanged and can be replaced separately.
+Or run all four corpora over every complete `HF_Llama_1B*` model under
+`/dais/fs/scratch/afkhan/Creativity_Project/Checkpoint_Saves` with
+`./run_mia_basic.sh <GPU_ID>`. The runner always selects the exact
+`global_step22100` directory in each model container and skips a container if
+that checkpoint is missing or incomplete. Override the model root with
+`MIA_CHECKPOINTS_DIR` when needed.
 
 The suite runs the older branch's unchanged loss, Min-K, Min-K++,
 gradient-norm, and zlib configurations.
