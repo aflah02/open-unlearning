@@ -3,7 +3,9 @@ defaults:
   - override /eval: custom_mia
   - _self_
 
-task_name: custom_mia_eval
+mia_corpus: ???
+mia_data_root: ${paths.work_dir}/../prepared_data
+task_name: custom_mia_${mia_corpus}
 paths:
   output_dir: saves/eval/${task_name}
 

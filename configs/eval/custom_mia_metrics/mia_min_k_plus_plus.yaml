@@ -12,7 +12,7 @@ datasets:
     args:
       hf_args:
         path: json
-        data_files: "/NS/llm-pretraining/work/afkhan/HubbleSuite/seen.jsonl"
+        data_files: "${mia_data_root}/${mia_corpus}/members.jsonl"
         trust_remote_code: true
         split: "train"
       max_length: 512
@@ -21,7 +21,7 @@ datasets:
     args:
       hf_args:
         path: json
-        data_files: "/NS/llm-pretraining/work/afkhan/HubbleSuite/holdout.jsonl"
+        data_files: "${mia_data_root}/${mia_corpus}/unseen.jsonl"
         trust_remote_code: true
         split: "train"
       max_length: 512

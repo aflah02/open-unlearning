@@ -1,13 +1,17 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
-export HF_HOME="/NS/llm-artifacts/nobackup/HF_HOME"
+# Usage: ./run_mia_basic.sh <GPU_ID>
+MIA_GPU_ID=${1:-}
+MIA_PYTHON_BIN=${MIA_PYTHON_BIN:-../open_unlearning_env/bin/python}
 
-# Usage: ./hubble_runner.sh <GPU_ID>
-GPU_ID=$1
-
-if [ -z "$GPU_ID" ]; then
-  echo "Usage: $0 <GPU_ID>"
-  exit 1
+if [[ -z "$MIA_GPU_ID" ]]; then
+  echo "Usage: $0 <GPU_ID>" >&2
+  exit 2
+fi
+if [[ ! -x "$MIA_PYTHON_BIN" ]]; then
+  echo "Python executable not found: $MIA_PYTHON_BIN" >&2
+  exit 2
 fi
 
 # List of models to loop over
@@ -18,38 +22,33 @@ MODELS=(
   "hubble-8b-500b_toks-perturbed-hf"
 )
 
-# List of tasks to loop over
-TASKS=(
-  # "mia_gutenberg_popular"
-  # "mia_gutenberg_unpopular"
-  # "mia_passage_wikipedia"
-  "mia_yago_biographies"
-  # "mia_mmlu"
+# These names correspond to MIA/prepared_data/<corpus>/.
+MIA_CORPORA=(
+  "books3"
+  "harvard"
+  "synthetic"
+  "weborganizer"
 )
 
-# Loop through tasks
-for TASK in "${TASKS[@]}"; do
-  echo "=== Starting task: $TASK ==="
-  
-  # Loop through models
+for MIA_CORPUS in "${MIA_CORPORA[@]}"; do
+  echo "=== Starting corpus: $MIA_CORPUS ==="
+
   for MODEL in "${MODELS[@]}"; do
-    # Extract part after last slash
-    SUFFIX=$(basename "$MODEL")
+    MODEL_SUFFIX=${MODEL##*/}
+    MIA_TASK_NAME="creativity_mia_${MIA_CORPUS}_${MODEL_SUFFIX}"
 
-    # Construct task name with suffix
-    TASK_NAME="${TASK}_eval_${SUFFIX}"
+    echo ">>> Running corpus $MIA_CORPUS with model $MODEL on GPU $MIA_GPU_ID"
+    echo ">>> Task name: $MIA_TASK_NAME"
 
-    echo ">>> Running on GPU $GPU_ID with model $MODEL for task $TASK"
-    echo ">>> Task name: $TASK_NAME"
-
-    CUDA_VISIBLE_DEVICES=$GPU_ID python src/eval.py \
+    CUDA_VISIBLE_DEVICES="$MIA_GPU_ID" "$MIA_PYTHON_BIN" src/eval.py \
       --config-name=eval.yaml \
-      experiment=eval/$TASK/default \
+      experiment=eval/custom_mia/default \
+      mia_corpus="$MIA_CORPUS" \
       model="$MODEL" \
-      task_name="$TASK_NAME"
+      task_name="$MIA_TASK_NAME"
   done
-  
-  echo "=== Completed task: $TASK ==="
+
+  echo "=== Completed corpus: $MIA_CORPUS ==="
 done
 
-echo "All tasks and models completed!"
+echo "All Creativity MIA corpora and models completed."

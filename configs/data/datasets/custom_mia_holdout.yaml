@@ -3,7 +3,7 @@ handler: CompletionDataset
 args:
   hf_args:
     path: json
-    data_files: "/NS/llm-pretraining/work/afkhan/HubbleSuite/holdout.jsonl"  # Replace with your actual path
+    data_files: "${mia_data_root}/${mia_corpus}/unseen.jsonl"
     trust_remote_code: true
   split: null
   max_length: 512

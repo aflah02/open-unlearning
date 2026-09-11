@@ -3,7 +3,7 @@ handler: CompletionDataset
 args:
   hf_args:
     path: json
-    data_files: "/NS/llm-pretraining/work/afkhan/HubbleSuite/forget.jsonl"  # Replace with your actual path
+    data_files: "${mia_data_root}/${mia_corpus}/members.jsonl"
     trust_remote_code: true
   split: null
   max_length: 512

@@ -1,17 +1,31 @@
-# This branch contains the exact setup used to run the MIA evals for Hubble
+# Creativity membership inference experiments
 
-Here is a description of the files - 
+This branch points the existing `custom_mia` evaluation suite at the prepared
+Creativity datasets in `../prepared_data`. The preparation script decodes the
+GPT-NeoX samples into the same text-only JSONL schema used by the older branch;
+OpenUnlearning continues to use its existing `CompletionDataset` and collator.
 
-- `prepare_data.ipynb` is used to download and setup data for the evals under `Hubble_Data`
-- `run_mia_basic.sh` runs the MIA tests for seen v/s unseen samples for all the models without accounting for duplicate counts
-- `run_mia_variants_X.sh` runs the MIA tests with varying duplicate count seen examples for different sets of datapoints
-- `plot.ipynb` consolidates the results
+Supported corpus names are `books3`, `harvard`, `synthetic`, and `weborganizer`.
+Each directory must contain `members.jsonl` and `unseen.jsonl` as produced by
+`../prepare_data.py`.
 
-We modify the library to allow support for Hubble models.
+Run one corpus/model pair from this directory with:
 
-All of our results are present under `saves/`. 
+```bash
+../open_unlearning_env/bin/python src/eval.py --config-name=eval.yaml \
+  experiment=eval/custom_mia/default \
+  mia_corpus=books3 \
+  model=hubble-1b-500b_toks-standard-hf
+```
 
-You can follow the README below to setup the library and then run the files above to reproduce the experiments.
+Or run all four corpora over the existing Hubble model configs with
+`./run_mia_basic.sh <GPU_ID>`. Those model configs are intentionally carried over
+unchanged and can be replaced separately.
+
+The suite runs the older branch's unchanged loss, Min-K, Min-K++,
+gradient-norm, and zlib configurations.
+
+The original OpenUnlearning documentation follows.
 
 <div align="center">
 
