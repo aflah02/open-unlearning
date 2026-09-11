@@ -1,3 +1,0 @@
-- experiment=eval/mia_gutenberg_popular/default
-- model=hubble-8b-500b_toks-perturbed-hf
-- task_name=mia_gutenberg_popular_eval_hubble-8b-500b_toks-perturbed-hf

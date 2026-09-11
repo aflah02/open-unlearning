@@ -1,3 +1,0 @@
-- experiment=eval/mia_passage_wikipedia/default
-- model=hubble-1b-500b_toks-perturbed-hf
-- task_name=mia_passage_wikipedia_eval_hubble-1b-500b_toks-perturbed-hf
