@@ -6,4 +6,4 @@ args:
     data_files: "${mia_data_root}/${mia_corpus}/unseen.jsonl"
     trust_remote_code: true
   split: null
-  max_length: 512
+  max_length: ${mia_max_length}

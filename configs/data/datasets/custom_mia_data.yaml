@@ -8,7 +8,7 @@ forget:
       data_files: "${mia_data_root}/${mia_corpus}/members.jsonl"
       trust_remote_code: true
     split: null
-    max_length: 512
+    max_length: ${mia_max_length}
 holdout:
   handler: CompletionDataset
   access_key: holdout
@@ -18,4 +18,4 @@ holdout:
       data_files: "${mia_data_root}/${mia_corpus}/unseen.jsonl"
       trust_remote_code: true
     split: null
-    max_length: 512
+    max_length: ${mia_max_length}

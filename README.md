@@ -4,6 +4,8 @@ This branch points the existing `custom_mia` evaluation suite at the prepared
 Creativity datasets in `../prepared_data`. The preparation script decodes the
 GPT-NeoX samples into the same text-only JSONL schema used by the older branch;
 OpenUnlearning continues to use its existing `CompletionDataset` and collator.
+Each prepared example contains up to 4096 tokens from one source document;
+shorter documents are retained without cross-document concatenation.
 
 Supported corpus names are `books3`, `harvard`, `synthetic`, and `weborganizer`.
 Each directory must contain `members.jsonl` and `unseen.jsonl` as produced by
@@ -15,6 +17,7 @@ Run one corpus/model pair from this directory with:
 ../open_unlearning_env/bin/python src/eval.py --config-name=eval.yaml \
   experiment=eval/custom_mia/default \
   mia_corpus=books3 \
+  mia_max_length=4096 \
   model=local-llama-1b \
   model.local_model_path=/dais/fs/scratch/afkhan/Creativity_Project/Checkpoint_Saves/HF_Llama_1B_WebOrganizer_Without_Creative_175B+Books3_2x5B/global_step22100
 ```
@@ -23,7 +26,9 @@ Or run all four corpora over every complete `HF_Llama_1B*` model under
 `/dais/fs/scratch/afkhan/Creativity_Project/Checkpoint_Saves` with
 `./run_mia_basic.sh <GPU_ID>`. The runner always selects the exact
 `global_step22100` directory in each model container and skips a container if
-that checkpoint is missing or incomplete. Override the model root with
+that checkpoint is missing or incomplete. For every corpus/model pair, it runs
+maximum document lengths 256, 512, 1024, 2048, and 4096. Each length is included
+in the task name and output directory. Override the model root with
 `MIA_CHECKPOINTS_DIR` when needed.
 
 The suite runs the older branch's unchanged loss, Min-K, Min-K++,

@@ -52,26 +52,37 @@ MIA_CORPORA=(
   "weborganizer"
 )
 
+MIA_LENGTHS=(
+  256
+  512
+  1024
+  2048
+  4096
+)
+
 for MIA_CORPUS in "${MIA_CORPORA[@]}"; do
   echo "=== Starting corpus: $MIA_CORPUS ==="
 
   for MIA_MODEL_PATH in "${MIA_MODEL_PATHS[@]}"; do
-    MIA_MODEL_CONTAINER=${MIA_MODEL_PATH%/global_step*}
-    MIA_MODEL_NAME=${MIA_MODEL_CONTAINER##*/}
-    MIA_MODEL_TAG=${MIA_MODEL_NAME//+/_}
-    MIA_STEP_NAME=${MIA_MODEL_PATH##*/}
-    MIA_TASK_NAME="creativity_mia_${MIA_CORPUS}_${MIA_MODEL_TAG}_${MIA_STEP_NAME}"
+    for MIA_MAX_LENGTH in "${MIA_LENGTHS[@]}"; do
+      MIA_MODEL_CONTAINER=${MIA_MODEL_PATH%/global_step*}
+      MIA_MODEL_NAME=${MIA_MODEL_CONTAINER##*/}
+      MIA_MODEL_TAG=${MIA_MODEL_NAME//+/_}
+      MIA_STEP_NAME=${MIA_MODEL_PATH##*/}
+      MIA_TASK_NAME="creativity_mia_${MIA_CORPUS}_${MIA_MODEL_TAG}_${MIA_STEP_NAME}_len${MIA_MAX_LENGTH}"
 
-    echo ">>> Running corpus $MIA_CORPUS with model $MIA_MODEL_PATH on GPU $MIA_GPU_ID"
-    echo ">>> Task name: $MIA_TASK_NAME"
+      echo ">>> Running corpus $MIA_CORPUS at length $MIA_MAX_LENGTH with model $MIA_MODEL_PATH on GPU $MIA_GPU_ID"
+      echo ">>> Task name: $MIA_TASK_NAME"
 
-    CUDA_VISIBLE_DEVICES="$MIA_GPU_ID" "$MIA_PYTHON_BIN" src/eval.py \
-      --config-name=eval.yaml \
-      experiment=eval/custom_mia/default \
-      mia_corpus="$MIA_CORPUS" \
-      model=local-llama-1b \
-      model.local_model_path="$MIA_MODEL_PATH" \
-      task_name="$MIA_TASK_NAME"
+      CUDA_VISIBLE_DEVICES="$MIA_GPU_ID" "$MIA_PYTHON_BIN" src/eval.py \
+        --config-name=eval.yaml \
+        experiment=eval/custom_mia/default \
+        mia_corpus="$MIA_CORPUS" \
+        mia_max_length="$MIA_MAX_LENGTH" \
+        model=local-llama-1b \
+        model.local_model_path="$MIA_MODEL_PATH" \
+        task_name="$MIA_TASK_NAME"
+    done
   done
 
   echo "=== Completed corpus: $MIA_CORPUS ==="
