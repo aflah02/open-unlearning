@@ -20,9 +20,12 @@ if [[ ! -d "$MIA_CHECKPOINTS_DIR" ]]; then
 fi
 
 shopt -s nullglob
-MIA_MODEL_CONTAINERS=("$MIA_CHECKPOINTS_DIR"/HF_Llama_1B*)
+MIA_MODEL_CONTAINERS=(
+  "$MIA_CHECKPOINTS_DIR"/HF_Llama_1B_WebOrganizer_Without_Creative_180B+Books3_5B*
+  "$MIA_CHECKPOINTS_DIR"/HF_Llama_1B_WebOrganizer_Without_Creative_180B+Synthetic_Data_5B*
+)
 if (( ${#MIA_MODEL_CONTAINERS[@]} == 0 )); then
-  echo "No HF_Llama_1B* model directories found under $MIA_CHECKPOINTS_DIR" >&2
+  echo "No requested Books3_5B or Synthetic_Data_5B model directories found under $MIA_CHECKPOINTS_DIR" >&2
   exit 2
 fi
 
@@ -40,7 +43,7 @@ done
 shopt -u nullglob
 
 if (( ${#MIA_MODEL_PATHS[@]} == 0 )); then
-  echo "No complete HF_Llama_1B*/global_step22100 checkpoints found under $MIA_CHECKPOINTS_DIR" >&2
+  echo "No complete requested global_step22100 checkpoints found under $MIA_CHECKPOINTS_DIR" >&2
   exit 2
 fi
 
@@ -50,11 +53,10 @@ MIA_CORPORA=(
 )
 
 MIA_LENGTHS=(
+  128
   256
   512
   1024
-  2048
-  4096
 )
 
 for MIA_CORPUS in "${MIA_CORPORA[@]}"; do

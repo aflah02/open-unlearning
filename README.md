@@ -17,19 +17,20 @@ Run one corpus/model pair from this directory with:
 ../open_unlearning_env/bin/python src/eval.py --config-name=eval.yaml \
   experiment=eval/custom_mia/default \
   mia_corpus=books3 \
-  mia_max_length=4096 \
+  mia_max_length=1024 \
   model=local-llama-1b \
-  model.local_model_path=/dais/fs/scratch/afkhan/Creativity_Project/Checkpoint_Saves/HF_Llama_1B_WebOrganizer_Without_Creative_175B+Books3_2x5B/global_step22100
+  model.local_model_path=/dais/fs/scratch/afkhan/Creativity_Project/Checkpoint_Saves/HF_Llama_1B_WebOrganizer_Without_Creative_180B+Books3_5B/global_step22100
 ```
 
-Or run Books3 over every complete `HF_Llama_1B*` model under
+Or run Books3 over the matching `180B+Books3_5B*` and
+`180B+Synthetic_Data_5B*` model families under
 `/dais/fs/scratch/afkhan/Creativity_Project/Checkpoint_Saves` with
 `./run_mia_basic.sh <GPU_ID>`. The runner always selects the exact
 `global_step22100` directory in each model container and skips a container if
 that checkpoint is missing or incomplete. For every model, it runs maximum
-document lengths 256, 512, 1024, 2048, and 4096. Each length is included in the
-task name and output directory. With the current 14 complete checkpoints this
-is 70 tasks. Override the model root with `MIA_CHECKPOINTS_DIR` when needed.
+document lengths 128, 256, 512, and 1024. Each length is included in the task
+name and output directory. The current six complete checkpoints produce 24
+tasks. Override the model root with `MIA_CHECKPOINTS_DIR` when needed.
 
 The suite runs the older branch's unchanged loss, Min-K, Min-K++,
 gradient-norm, and zlib configurations.
