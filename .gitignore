@@ -1,6 +1,5 @@
 # custom .gitignore
 submit.py
-/Hubble_Data/
 /saves/
 /saves_512/
 !src/data/__init__.py
