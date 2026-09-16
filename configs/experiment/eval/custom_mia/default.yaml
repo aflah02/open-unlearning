@@ -5,7 +5,7 @@ defaults:
 
 mia_corpus: ???
 mia_max_length: 512
-mia_data_root: ${paths.work_dir}/../prepared_data
+mia_data_root: ${paths.work_dir}/../prepared_data_v2
 task_name: custom_mia_${mia_corpus}_len${mia_max_length}
 paths:
   output_dir: saves/eval/${task_name}

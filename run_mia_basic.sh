@@ -44,12 +44,9 @@ if (( ${#MIA_MODEL_PATHS[@]} == 0 )); then
   exit 2
 fi
 
-# These names correspond to MIA/prepared_data/<corpus>/.
+# These names correspond to MIA/prepared_data_v2/<corpus>/.
 MIA_CORPORA=(
   "books3"
-  "harvard"
-  "synthetic"
-  "weborganizer"
 )
 
 MIA_LENGTHS=(
@@ -88,4 +85,4 @@ for MIA_CORPUS in "${MIA_CORPORA[@]}"; do
   echo "=== Completed corpus: $MIA_CORPUS ==="
 done
 
-echo "All Creativity MIA corpora and models completed."
+echo "Books3 MIA experiments for all models completed."
