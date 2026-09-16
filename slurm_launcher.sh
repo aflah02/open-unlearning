@@ -3,12 +3,12 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --partition=gpu1
-#SBATCH --gres=gpu:1
+#SBATCH --gres=gpu:h200:1
 #SBATCH --cpus-per-task=12
 #SBATCH --mem=250000
 #SBATCH --time=24:00:00
 #SBATCH --array=0-23
-#SBATCH --output=%x_%A_%a.out
+#SBATCH --output=slurm_logs/%x_%A_%a.out
 set -euo pipefail
 
 MIA_PROJECT_ROOT="${MIA_PROJECT_ROOT:-${SLURM_SUBMIT_DIR:-$PWD}}"

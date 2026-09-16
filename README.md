@@ -38,11 +38,12 @@ Submit the sweep as 24 parallelizable Slurm array jobs from this directory:
 sbatch slurm_launcher.sh
 ```
 
-Each array task runs one model/length pair and requests one node in `gpu1`, any
-available GPU, 12 CPU cores, 250 GB RAM, and 24 hours. Slurm can run all 24
-tasks concurrently when resources are available. Logs use
-`creativity_mia_<array-job-id>_<task-id>.out`. If submitted from another
-directory, set `MIA_PROJECT_ROOT` to this checkout before calling `sbatch`.
+Each array task runs one model/length pair and requests one node in `gpu1`, one
+H200 GPU, 12 CPU cores, 250 GB RAM, and 24 hours. Slurm can run all 24 tasks
+concurrently when resources are available. Logs are written as
+`slurm_logs/creativity_mia_<array-job-id>_<task-id>.out`. If submitted from
+another directory, set `MIA_PROJECT_ROOT` to this checkout before calling
+`sbatch`.
 
 For debugging, `./run_mia.sh <GPU_ID> <TASK_INDEX>` runs one indexed pair;
 omitting `TASK_INDEX` retains the sequential local sweep.
