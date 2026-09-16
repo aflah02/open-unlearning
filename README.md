@@ -25,12 +25,27 @@ Run one corpus/model pair from this directory with:
 Or run Books3 over the matching `180B+Books3_5B*` and
 `180B+Synthetic_Data_5B*` model families under
 `/dais/fs/scratch/afkhan/Creativity_Project/Checkpoint_Saves` with
-`./run_mia_basic.sh <GPU_ID>`. The runner always selects the exact
+`./run_mia.sh <GPU_ID>`. The runner always selects the exact
 `global_step22100` directory in each model container and skips a container if
 that checkpoint is missing or incomplete. For every model, it runs maximum
 document lengths 128, 256, 512, and 1024. Each length is included in the task
 name and output directory. The current six complete checkpoints produce 24
 tasks. Override the model root with `MIA_CHECKPOINTS_DIR` when needed.
+
+Submit the sweep as 24 parallelizable Slurm array jobs from this directory:
+
+```bash
+sbatch slurm_launcher.sh
+```
+
+Each array task runs one model/length pair and requests one node in `gpu1`, any
+available GPU, 12 CPU cores, 250 GB RAM, and 24 hours. Slurm can run all 24
+tasks concurrently when resources are available. Logs use
+`creativity_mia_<array-job-id>_<task-id>.out`. If submitted from another
+directory, set `MIA_PROJECT_ROOT` to this checkout before calling `sbatch`.
+
+For debugging, `./run_mia.sh <GPU_ID> <TASK_INDEX>` runs one indexed pair;
+omitting `TASK_INDEX` retains the sequential local sweep.
 
 The suite runs the older branch's unchanged loss, Min-K, Min-K++,
 gradient-norm, and zlib configurations.
