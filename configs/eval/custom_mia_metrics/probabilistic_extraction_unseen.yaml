@@ -9,6 +9,8 @@ probability_threshold: ${mia_probabilistic_probability_threshold}
 temperature: ${mia_probabilistic_temperature}
 top_k: ${mia_probabilistic_top_k}
 top_p: ${mia_probabilistic_top_p}
+prefix_length: ${mia_probabilistic_prefix_length}
+suffix_length: ${mia_probabilistic_suffix_length}
 
 datasets:
   unseen:

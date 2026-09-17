@@ -103,6 +103,33 @@ def evaluate_probability(model, batch):
     ]
 
 
+def _labeled_token_indices(model, labels):
+    """Return predictable labeled positions, excluding a terminal EOS if present."""
+    actual_indices = (labels != IGNORE_INDEX).nonzero(as_tuple=True)[0]
+    if actual_indices.numel() == 0:
+        return actual_indices
+
+    if actual_indices[0].item() == 0:
+        warnings.warn(
+            "Index 0 in a datapoint's input_ids cannot be predicted and will be ignored",
+            UserWarning,
+        )
+        actual_indices = actual_indices[actual_indices > 0]
+        if actual_indices.numel() == 0:
+            return actual_indices
+
+    eos_token_ids = getattr(model.config, "eos_token_id", None)
+    if eos_token_ids is not None:
+        if isinstance(eos_token_ids, int):
+            eos_token_ids = {eos_token_ids}
+        else:
+            eos_token_ids = set(eos_token_ids)
+        if labels[actual_indices[-1]].item() in eos_token_ids:
+            actual_indices = actual_indices[:-1]
+
+    return actual_indices
+
+
 def tokenwise_logprobs(model, batch, grad=False, return_labels=False):
     """
     Compute token-wise next token prediction logprobs for all labeled tokens for each sample in a batch.
@@ -125,22 +152,14 @@ def tokenwise_logprobs(model, batch, grad=False, return_labels=False):
     labels_batch = []
     for i in range(bsz):
         labels = batch["labels"][i]
-        # only focus on tokens which have loss on them (i.e. used in labels)
-        actual_indices = (labels != IGNORE_INDEX).nonzero(as_tuple=True)[0][
-            :-1
-        ]  # -1 to ignore eos prediction
+        # Only focus on labeled positions that have a preceding token.
+        actual_indices = _labeled_token_indices(model, labels)
         num_actual_tokens = actual_indices.numel()
         if num_actual_tokens == 0:
             labels_batch.append(torch.tensor([], device=labels.device))
             log_probs_batch.append(torch.tensor([], device=labels.device))
             continue
-        start_idx, end_idx = actual_indices[0].item(), actual_indices[-1].item()
-        if start_idx == 0:
-            warnings.warn(
-                "Index 0 in a datapoint's input_ids must not have loss (unignored labels) on it",
-                UserWarning,
-            )
-        log_probs_batch.append(target_log_probs[i, start_idx - 1 : end_idx])
+        log_probs_batch.append(target_log_probs[i, actual_indices - 1])
         labels_batch.append(labels[actual_indices])
 
     return (log_probs_batch, labels_batch) if return_labels else log_probs_batch
@@ -169,22 +188,14 @@ def tokenwise_vocab_logprobs(model, batch, grad=False, return_labels=False):
     labels_batch = []
     for i in range(bsz):
         labels = batch["labels"][i]
-        # Only include positions that have labels
-        actual_indices = (labels != IGNORE_INDEX).nonzero(as_tuple=True)[0][
-            :-1
-        ]  # -1 to ignore eos prediction
+        # Only include labeled positions that have a preceding token.
+        actual_indices = _labeled_token_indices(model, labels)
         if len(actual_indices) == 0:
             labels_batch.append(torch.tensor([], device=labels.device))
             log_probs_batch.append(torch.zeros(0, V, device=labels.device))
             continue
-        start_idx, end_idx = actual_indices[0].item(), actual_indices[-1].item()
-        if start_idx == 0:
-            warnings.warn(
-                "Index 0 in a datapoint's input_ids must not have loss (unignored labels) on it",
-                UserWarning,
-            )
-        # Return full distribution for each position: shape (N, V)
-        log_probs_batch.append(log_probs[i, start_idx - 1 : end_idx])
+        # Return the full next-token distribution for each labeled position.
+        log_probs_batch.append(log_probs[i, actual_indices - 1])
         labels_batch.append(labels[actual_indices])
 
     return (log_probs_batch, labels_batch) if return_labels else log_probs_batch
