@@ -10,6 +10,8 @@ defaults:
     - exact_memorization_unseen
     - extraction_strength_members
     - extraction_strength_unseen
+    - probabilistic_extraction_members
+    - probabilistic_extraction_unseen
 
 handler: TOFUEvaluator
 output_dir: ${paths.output_dir}
