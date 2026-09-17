@@ -11,4 +11,4 @@ style:
 	ruff format $(check_dirs) setup.py setup_data.py
 
 test:
-	CUDA_VISIBLE_DEVICES= pytest tests/
+	PYTHONPATH=src CUDA_VISIBLE_DEVICES= python -m unittest discover -s tests

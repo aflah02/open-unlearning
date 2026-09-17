@@ -52,11 +52,15 @@ The suite runs the older branch's unchanged loss, Min-K, Min-K++,
 gradient-norm, and zlib configurations. It also runs the native Exact
 Memorization and Extraction Strength metrics independently on members and
 unseen documents. Probabilistic Discoverable Extraction runs on both groups as
-well, using top-k sampling with `k=40`, `T=1`, `n=100`, and `p=0.5` by default.
-Override these settings with `MIA_PROBABILISTIC_NUM_QUERIES`,
-`MIA_PROBABILISTIC_THRESHOLD`, `MIA_PROBABILISTIC_TEMPERATURE`,
-`MIA_PROBABILISTIC_TOP_K`, and `MIA_PROBABILISTIC_TOP_P` when invoking
-`run_mia.sh`. The independent member/unseen measurements include:
+well. Following Hayes et al., it conditions on the first 50 content tokens,
+scores the subsequent 50-token suffix under top-k sampling with `k=40` and
+`T=1`, and reports a grid over `n=[1,10,100,1000,10000]` and
+`p=[0.1,0.5,0.9,0.99,0.999]`. Override these settings with
+`MIA_PROBABILISTIC_NUM_QUERIES`, `MIA_PROBABILISTIC_THRESHOLDS`,
+`MIA_PROBABILISTIC_TEMPERATURE`, `MIA_PROBABILISTIC_TOP_K`,
+`MIA_PROBABILISTIC_TOP_P`, `MIA_PROBABILISTIC_PREFIX_LENGTH`, and
+`MIA_PROBABILISTIC_SUFFIX_LENGTH` when invoking `run_mia.sh`. The independent
+member/unseen measurements include:
 `exact_memorization_members`, `exact_memorization_unseen`,
 `extraction_strength_members`, `extraction_strength_unseen`,
 `probabilistic_extraction_members`, and `probabilistic_extraction_unseen`.

@@ -77,9 +77,25 @@ top_p: null
 
 Set both `top_k` and `top_p` to `null` for temperature-only sampling. Set
 `top_k: 1` for greedy decoding. If both truncation controls are set, top-k is
-applied before top-p, matching the usual generation pipeline. To evaluate
-several `(n, p)` operating points, add copies of the metric config under unique
-metric names with different `num_queries` and `probability_threshold` values.
+applied before top-p, matching the usual generation pipeline. Both
+`num_queries` and `probability_threshold` also accept lists; the handler then
+reports extraction rates for their Cartesian product without repeating the
+model forward pass.
+
+For text-only datasets, `prefix_length` reclassifies that many initially
+labeled content tokens as the prompt, and `suffix_length` selects the target
+that immediately follows. The paper's main setup can therefore be configured
+as:
+
+```yaml
+num_queries: [1, 10, 100, 1000, 10000]
+probability_threshold: [0.1, 0.5, 0.9, 0.99, 0.999]
+prefix_length: 50
+suffix_length: 50
+temperature: 1.0
+top_k: 40
+top_p: null
+```
 
 ### Steps to create new metrics:
 

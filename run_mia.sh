@@ -6,11 +6,13 @@ MIA_GPU_ID=${1:-}
 MIA_TASK_INDEX=${2:-${SLURM_ARRAY_TASK_ID:-}}
 MIA_PYTHON_BIN=${MIA_PYTHON_BIN:-../open_unlearning_env/bin/python}
 MIA_CHECKPOINTS_DIR=${MIA_CHECKPOINTS_DIR:-/dais/fs/scratch/afkhan/Creativity_Project/Checkpoint_Saves}
-MIA_PROBABILISTIC_NUM_QUERIES=${MIA_PROBABILISTIC_NUM_QUERIES:-100}
-MIA_PROBABILISTIC_THRESHOLD=${MIA_PROBABILISTIC_THRESHOLD:-0.5}
+MIA_PROBABILISTIC_NUM_QUERIES=${MIA_PROBABILISTIC_NUM_QUERIES:-[1,10,100,1000,10000]}
+MIA_PROBABILISTIC_THRESHOLDS=${MIA_PROBABILISTIC_THRESHOLDS:-${MIA_PROBABILISTIC_THRESHOLD:-[0.1,0.5,0.9,0.99,0.999]}}
 MIA_PROBABILISTIC_TEMPERATURE=${MIA_PROBABILISTIC_TEMPERATURE:-1.0}
 MIA_PROBABILISTIC_TOP_K=${MIA_PROBABILISTIC_TOP_K:-40}
 MIA_PROBABILISTIC_TOP_P=${MIA_PROBABILISTIC_TOP_P:-null}
+MIA_PROBABILISTIC_PREFIX_LENGTH=${MIA_PROBABILISTIC_PREFIX_LENGTH:-50}
+MIA_PROBABILISTIC_SUFFIX_LENGTH=${MIA_PROBABILISTIC_SUFFIX_LENGTH:-50}
 
 if [[ -z "$MIA_GPU_ID" ]]; then
   echo "Usage: $0 <GPU_ID>" >&2
@@ -73,7 +75,7 @@ run_mia_task() {
 
   echo ">>> Running corpus $MIA_CORPUS at length $max_length with model $model_path on GPU $MIA_GPU_ID"
   echo ">>> Task name: $task_name"
-  echo ">>> Probabilistic extraction: n=$MIA_PROBABILISTIC_NUM_QUERIES, p=$MIA_PROBABILISTIC_THRESHOLD, T=$MIA_PROBABILISTIC_TEMPERATURE, top-k=$MIA_PROBABILISTIC_TOP_K, top-p=$MIA_PROBABILISTIC_TOP_P"
+  echo ">>> Probabilistic extraction: n=$MIA_PROBABILISTIC_NUM_QUERIES, p=$MIA_PROBABILISTIC_THRESHOLDS, T=$MIA_PROBABILISTIC_TEMPERATURE, top-k=$MIA_PROBABILISTIC_TOP_K, top-p=$MIA_PROBABILISTIC_TOP_P, prefix=$MIA_PROBABILISTIC_PREFIX_LENGTH, suffix=$MIA_PROBABILISTIC_SUFFIX_LENGTH"
 
   CUDA_VISIBLE_DEVICES="$MIA_GPU_ID" "$MIA_PYTHON_BIN" src/eval.py \
     --config-name=eval.yaml \
@@ -81,10 +83,12 @@ run_mia_task() {
     mia_corpus="$MIA_CORPUS" \
     mia_max_length="$max_length" \
     mia_probabilistic_num_queries="$MIA_PROBABILISTIC_NUM_QUERIES" \
-    mia_probabilistic_probability_threshold="$MIA_PROBABILISTIC_THRESHOLD" \
+    mia_probabilistic_probability_threshold="$MIA_PROBABILISTIC_THRESHOLDS" \
     mia_probabilistic_temperature="$MIA_PROBABILISTIC_TEMPERATURE" \
     mia_probabilistic_top_k="$MIA_PROBABILISTIC_TOP_K" \
     mia_probabilistic_top_p="$MIA_PROBABILISTIC_TOP_P" \
+    mia_probabilistic_prefix_length="$MIA_PROBABILISTIC_PREFIX_LENGTH" \
+    mia_probabilistic_suffix_length="$MIA_PROBABILISTIC_SUFFIX_LENGTH" \
     model=local-llama-1b \
     model.local_model_path="$model_path" \
     task_name="$task_name"

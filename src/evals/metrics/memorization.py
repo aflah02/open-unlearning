@@ -90,6 +90,30 @@ def _probability_at_least_once(log_probability, num_queries):
     return -math.expm1(num_queries * log_failure_probability)
 
 
+def _select_target_span(log_probs, labels, prefix_length=0, suffix_length=None):
+    """Select the suffix scored by probabilistic discoverable extraction.
+
+    ``prefix_length`` skips initially labeled content tokens, allowing text-only
+    datasets to use those tokens as the extraction prompt. ``suffix_length``
+    limits the target that follows. A ``None`` result means the example is too
+    short for the requested fixed-length suffix.
+    """
+    start = prefix_length
+    if suffix_length is None:
+        end = len(labels)
+    else:
+        end = start + suffix_length
+        if len(labels) < end:
+            return None
+    if start >= end:
+        return None
+    return log_probs[start:end], labels[start:end]
+
+
+def _operating_point_key(num_queries, probability_threshold):
+    return f"n={num_queries},p={probability_threshold:g}"
+
+
 @unlearning_metric(name="probability")
 def probability(model, **kwargs):
     """Compute the probabilities by data points and report aggregated average"""
@@ -288,25 +312,58 @@ def probabilistic_extraction(model, **kwargs):
     under the configured sampling scheme. It then derives the probability of
     observing that suffix at least once in ``num_queries`` independent queries.
     The aggregate is the fraction of targets whose extraction probability is at
-    least ``probability_threshold``.
+    least ``probability_threshold``. Both operating-point arguments may be lists
+    to evaluate an (n, p) grid with one model forward pass.
     """
     data = kwargs["data"]
     collator = kwargs["collators"]
     batch_size = kwargs["batch_size"]
-    num_queries = kwargs["num_queries"]
-    probability_threshold = kwargs["probability_threshold"]
+    num_queries_arg = kwargs["num_queries"]
+    probability_threshold_arg = kwargs["probability_threshold"]
     temperature = kwargs.get("temperature", 1.0)
     top_k = kwargs.get("top_k")
     top_p = kwargs.get("top_p")
+    prefix_length = kwargs.get("prefix_length", 0)
+    suffix_length = kwargs.get("suffix_length")
 
-    if isinstance(num_queries, bool) or int(num_queries) != num_queries:
-        raise ValueError("num_queries must be a positive integer")
-    if num_queries < 1:
-        raise ValueError("num_queries must be a positive integer")
-    if not 0 <= probability_threshold <= 1:
-        raise ValueError("probability_threshold must be in the interval [0, 1]")
+    query_arg_is_scalar = np.isscalar(num_queries_arg)
+    threshold_arg_is_scalar = np.isscalar(probability_threshold_arg)
+    num_queries_values = (
+        [num_queries_arg] if query_arg_is_scalar else list(num_queries_arg)
+    )
+    probability_thresholds = (
+        [probability_threshold_arg]
+        if threshold_arg_is_scalar
+        else list(probability_threshold_arg)
+    )
+    if not num_queries_values:
+        raise ValueError("num_queries must contain at least one value")
+    if not probability_thresholds:
+        raise ValueError("probability_threshold must contain at least one value")
+    for value in num_queries_values:
+        if isinstance(value, bool) or int(value) != value or value < 1:
+            raise ValueError("num_queries values must be positive integers")
+    for value in probability_thresholds:
+        if not 0 <= value <= 1:
+            raise ValueError(
+                "probability_threshold values must be in the interval [0, 1]"
+            )
+    if isinstance(prefix_length, bool) or int(prefix_length) != prefix_length:
+        raise ValueError("prefix_length must be a non-negative integer")
+    if prefix_length < 0:
+        raise ValueError("prefix_length must be a non-negative integer")
+    if suffix_length is not None and (
+        isinstance(suffix_length, bool)
+        or int(suffix_length) != suffix_length
+        or suffix_length < 1
+    ):
+        raise ValueError("suffix_length must be a positive integer or null")
 
-    num_queries = int(num_queries)
+    num_queries_values = [int(value) for value in num_queries_values]
+    probability_thresholds = [float(value) for value in probability_thresholds]
+    prefix_length = int(prefix_length)
+    suffix_length = None if suffix_length is None else int(suffix_length)
+    sweep_operating_points = not (query_arg_is_scalar and threshold_arg_is_scalar)
     dataloader = DataLoader(data, batch_size=batch_size, collate_fn=collator)
 
     def _probabilistic_extraction(model, batch):
@@ -315,10 +372,17 @@ def probabilistic_extraction(model, **kwargs):
         )
         extraction_batch = []
         for log_probs, labels in zip(log_probs_batch, labels_batch):
-            if len(labels) == 0:
+            target_span = _select_target_span(
+                log_probs,
+                labels,
+                prefix_length=prefix_length,
+                suffix_length=suffix_length,
+            )
+            if target_span is None:
                 logger.warning(
                     "Probabilistic extraction for an instance is marked None, due "
-                    "to tokenization issues that resulted in no valid target tokens."
+                    "to insufficient valid tokens for the requested prefix/suffix "
+                    "split."
                 )
                 extraction_batch.append(
                     {
@@ -326,30 +390,50 @@ def probabilistic_extraction(model, **kwargs):
                         "single_query_probability": None,
                         "extraction_probability": None,
                         "is_extractable": None,
+                        "num_target_tokens": 0,
                     }
                 )
                 continue
 
+            target_log_probs, target_labels = target_span
             decoder_log_probs = _sampling_log_probs(
-                log_probs,
+                target_log_probs,
                 temperature=temperature,
                 top_k=top_k,
                 top_p=top_p,
             )
             target_log_probs = torch.gather(
-                decoder_log_probs, dim=-1, index=labels.unsqueeze(-1)
+                decoder_log_probs, dim=-1, index=target_labels.unsqueeze(-1)
             ).squeeze(-1)
             log_probability = target_log_probs.double().sum().item()
             single_query_probability = math.exp(log_probability)
-            extraction_probability = _probability_at_least_once(
-                log_probability, num_queries
-            )
+            extraction_probabilities = {
+                str(num_queries): _probability_at_least_once(
+                    log_probability, num_queries
+                )
+                for num_queries in num_queries_values
+            }
+            if sweep_operating_points:
+                is_extractable = {
+                    _operating_point_key(num_queries, threshold): (
+                        extraction_probabilities[str(num_queries)] >= threshold
+                    )
+                    for num_queries in num_queries_values
+                    for threshold in probability_thresholds
+                }
+                extraction_probability = extraction_probabilities
+            else:
+                extraction_probability = extraction_probabilities[
+                    str(num_queries_values[0])
+                ]
+                is_extractable = extraction_probability >= probability_thresholds[0]
             extraction_batch.append(
                 {
                     "log_probability": log_probability,
                     "single_query_probability": single_query_probability,
                     "extraction_probability": extraction_probability,
-                    "is_extractable": extraction_probability >= probability_threshold,
+                    "is_extractable": is_extractable,
+                    "num_target_tokens": len(target_labels),
                 }
             )
         return extraction_batch
@@ -361,13 +445,33 @@ def probabilistic_extraction(model, **kwargs):
         {},
         "Calculating probabilistic extraction",
     )
-    extractable_values = []
-    for evals in scores_by_index.values():
-        values = np.asarray(evals["is_extractable"], dtype=object).reshape(-1)
-        extractable_values.extend(float(value) for value in values if value is not None)
+    if sweep_operating_points:
+        operating_point_keys = [
+            _operating_point_key(num_queries, threshold)
+            for num_queries in num_queries_values
+            for threshold in probability_thresholds
+        ]
+        extractable_values = {key: [] for key in operating_point_keys}
+        for evals in scores_by_index.values():
+            values = evals["is_extractable"]
+            values = values if isinstance(values, list) else [values]
+            for value in values:
+                if value is None:
+                    continue
+                for key in operating_point_keys:
+                    extractable_values[key].append(float(value[key]))
+        agg_value = {key: np.mean(values) for key, values in extractable_values.items()}
+    else:
+        extractable_values = []
+        for evals in scores_by_index.values():
+            values = np.asarray(evals["is_extractable"], dtype=object).reshape(-1)
+            extractable_values.extend(
+                float(value) for value in values if value is not None
+            )
+        agg_value = np.mean(extractable_values)
 
     return {
-        "agg_value": np.mean(extractable_values),
+        "agg_value": agg_value,
         "value_by_index": scores_by_index,
     }
 

@@ -6,11 +6,13 @@ defaults:
 mia_corpus: ???
 mia_max_length: 512
 mia_data_root: ${paths.work_dir}/../prepared_data_v2
-mia_probabilistic_num_queries: 100
-mia_probabilistic_probability_threshold: 0.5
+mia_probabilistic_num_queries: [1, 10, 100, 1000, 10000]
+mia_probabilistic_probability_threshold: [0.1, 0.5, 0.9, 0.99, 0.999]
 mia_probabilistic_temperature: 1.0
 mia_probabilistic_top_k: 40
 mia_probabilistic_top_p: null
+mia_probabilistic_prefix_length: 50
+mia_probabilistic_suffix_length: 50
 task_name: custom_mia_${mia_corpus}_len${mia_max_length}
 paths:
   output_dir: saves/eval/${task_name}
