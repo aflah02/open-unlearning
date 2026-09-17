@@ -1,6 +1,4 @@
 import logging
-import math
-
 import torch
 import numpy as np
 from torch.utils.data import DataLoader
@@ -17,77 +15,6 @@ from evals.metrics.base import unlearning_metric
 # Supress the info messages logged while calculating rouge using rouge_scorer
 logging.getLogger("absl").setLevel(logging.WARNING)
 logger = logging.getLogger("evaluator")
-
-
-def _sampling_log_probs(log_probs, temperature=1.0, top_k=None, top_p=None):
-    """Apply a sampling scheme to base token log probabilities.
-
-    Temperature is applied first, followed by optional top-k and nucleus
-    filtering. The returned distributions are normalized in log space.
-    """
-    if temperature <= 0:
-        raise ValueError("temperature must be greater than 0")
-    if top_k is not None and (isinstance(top_k, bool) or int(top_k) != top_k):
-        raise ValueError("top_k must be a positive integer or null")
-    if top_k is not None and top_k <= 0:
-        raise ValueError("top_k must be a positive integer or null")
-    if top_p is not None and not 0 < top_p <= 1:
-        raise ValueError("top_p must be in the interval (0, 1]")
-
-    sampling_scores = log_probs / temperature
-
-    if top_k is not None:
-        top_k = min(int(top_k), sampling_scores.shape[-1])
-        top_k_scores = torch.topk(sampling_scores, top_k, dim=-1).values
-        threshold = top_k_scores[..., -1, None]
-        sampling_scores = sampling_scores.masked_fill(
-            sampling_scores < threshold, -torch.inf
-        )
-
-    if top_p is not None and top_p < 1:
-        sorted_scores, sorted_indices = torch.sort(
-            sampling_scores, descending=True, dim=-1
-        )
-        cumulative_probs = torch.softmax(sorted_scores, dim=-1).cumsum(dim=-1)
-        sorted_indices_to_remove = cumulative_probs > top_p
-        sorted_indices_to_remove[..., 1:] = sorted_indices_to_remove[..., :-1].clone()
-        sorted_indices_to_remove[..., 0] = False
-        indices_to_remove = torch.zeros_like(
-            sorted_indices_to_remove, dtype=torch.bool
-        ).scatter(-1, sorted_indices, sorted_indices_to_remove)
-        sampling_scores = sampling_scores.masked_fill(indices_to_remove, -torch.inf)
-
-    return torch.log_softmax(sampling_scores, dim=-1)
-
-
-def _probability_at_least_once(log_probability, num_queries):
-    """Return the probability of at least one success in independent queries."""
-    if isinstance(num_queries, bool) or int(num_queries) != num_queries:
-        raise ValueError("num_queries must be a positive integer")
-    if num_queries < 1:
-        raise ValueError("num_queries must be a positive integer")
-    if log_probability > 0:
-        raise ValueError("log_probability cannot be greater than 0")
-    if log_probability == -math.inf:
-        return 0.0
-    if log_probability == 0:
-        return 1.0
-
-    # Below this point exp(log_probability) is close to machine precision.
-    # Use the Poisson limit to preserve cases where a large query budget still
-    # makes the overall extraction probability material.
-    if log_probability < -36:
-        log_expected_successes = math.log(num_queries) + log_probability
-        if log_expected_successes > math.log(745):
-            return 1.0
-        expected_successes = math.exp(log_expected_successes)
-        return -math.expm1(-expected_successes)
-
-    single_query_probability = math.exp(log_probability)
-    if single_query_probability == 1:
-        return 1.0
-    log_failure_probability = math.log1p(-single_query_probability)
-    return -math.expm1(num_queries * log_failure_probability)
 
 
 @unlearning_metric(name="probability")
@@ -290,98 +217,6 @@ def exact_memorization(model, **kwargs):
     )
     em_values = aggregate_to_1D(em_values)
     return {"agg_value": np.mean(em_values), "value_by_index": scores_by_index}
-
-
-@unlearning_metric(name="probabilistic_extraction")
-def probabilistic_extraction(model, **kwargs):
-    """Compute the (n, p)-discoverable extraction rate.
-
-    For each target suffix, this computes its exact teacher-forced probability
-    under the configured sampling scheme. It then derives the probability of
-    observing that suffix at least once in ``num_queries`` independent queries.
-    The aggregate is the fraction of targets whose extraction probability is at
-    least ``probability_threshold``.
-    """
-    data = kwargs["data"]
-    collator = kwargs["collators"]
-    batch_size = kwargs["batch_size"]
-    num_queries = kwargs["num_queries"]
-    probability_threshold = kwargs["probability_threshold"]
-    temperature = kwargs.get("temperature", 1.0)
-    top_k = kwargs.get("top_k")
-    top_p = kwargs.get("top_p")
-
-    if isinstance(num_queries, bool) or int(num_queries) != num_queries:
-        raise ValueError("num_queries must be a positive integer")
-    if num_queries < 1:
-        raise ValueError("num_queries must be a positive integer")
-    if not 0 <= probability_threshold <= 1:
-        raise ValueError("probability_threshold must be in the interval [0, 1]")
-
-    num_queries = int(num_queries)
-    dataloader = DataLoader(data, batch_size=batch_size, collate_fn=collator)
-
-    def _probabilistic_extraction(model, batch):
-        log_probs_batch, labels_batch = tokenwise_vocab_logprobs(
-            model, batch, grad=False, return_labels=True
-        )
-        extraction_batch = []
-        for log_probs, labels in zip(log_probs_batch, labels_batch):
-            if len(labels) == 0:
-                logger.warning(
-                    "Probabilistic extraction for an instance is marked None, due "
-                    "to tokenization issues that resulted in no valid target tokens."
-                )
-                extraction_batch.append(
-                    {
-                        "log_probability": None,
-                        "single_query_probability": None,
-                        "extraction_probability": None,
-                        "is_extractable": None,
-                    }
-                )
-                continue
-
-            decoder_log_probs = _sampling_log_probs(
-                log_probs,
-                temperature=temperature,
-                top_k=top_k,
-                top_p=top_p,
-            )
-            target_log_probs = torch.gather(
-                decoder_log_probs, dim=-1, index=labels.unsqueeze(-1)
-            ).squeeze(-1)
-            log_probability = target_log_probs.double().sum().item()
-            single_query_probability = math.exp(log_probability)
-            extraction_probability = _probability_at_least_once(
-                log_probability, num_queries
-            )
-            extraction_batch.append(
-                {
-                    "log_probability": log_probability,
-                    "single_query_probability": single_query_probability,
-                    "extraction_probability": extraction_probability,
-                    "is_extractable": extraction_probability >= probability_threshold,
-                }
-            )
-        return extraction_batch
-
-    scores_by_index = run_batchwise_evals(
-        model,
-        dataloader,
-        _probabilistic_extraction,
-        {},
-        "Calculating probabilistic extraction",
-    )
-    extractable_values = []
-    for evals in scores_by_index.values():
-        values = np.asarray(evals["is_extractable"], dtype=object).reshape(-1)
-        extractable_values.extend(float(value) for value in values if value is not None)
-
-    return {
-        "agg_value": np.mean(extractable_values),
-        "value_by_index": scores_by_index,
-    }
 
 
 @unlearning_metric(name="extraction_strength")
