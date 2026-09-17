@@ -3,7 +3,7 @@ defaults:
   - ../../collator@collators: DataCollatorForSupervisedDatasetwithIndex
 
 handler: mia_gradnorm
-batch_size: 8
+batch_size: 1
 p: 2  # L2 norm, adjust as needed
 
 datasets:

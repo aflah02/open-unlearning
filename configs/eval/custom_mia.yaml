@@ -6,6 +6,10 @@ defaults:
     - mia_min_k_plus_plus
     - mia_gradnorm
     - mia_zlib
+    - exact_memorization_members
+    - exact_memorization_unseen
+    - extraction_strength_members
+    - extraction_strength_unseen
 
 handler: TOFUEvaluator
 output_dir: ${paths.output_dir}

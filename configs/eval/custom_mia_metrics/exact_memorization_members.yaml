@@ -1,0 +1,17 @@
+# @package eval.custom_mia.metrics.exact_memorization_members
+defaults:
+  - ../../collator@collators: DataCollatorForSupervisedDatasetwithIndex
+
+handler: exact_memorization
+batch_size: 8
+
+datasets:
+  members:
+    handler: CompletionDataset
+    args:
+      hf_args:
+        path: json
+        data_files: "${mia_data_root}/${mia_corpus}/members.jsonl"
+        trust_remote_code: true
+        split: "train"
+      max_length: ${mia_max_length}

@@ -49,7 +49,11 @@ For debugging, `./run_mia.sh <GPU_ID> <TASK_INDEX>` runs one indexed pair;
 omitting `TASK_INDEX` retains the sequential local sweep.
 
 The suite runs the older branch's unchanged loss, Min-K, Min-K++,
-gradient-norm, and zlib configurations.
+gradient-norm, and zlib configurations. It also runs the native Exact
+Memorization and Extraction Strength metrics independently on members and
+unseen documents, producing four mean measurements at every model/length:
+`exact_memorization_members`, `exact_memorization_unseen`,
+`extraction_strength_members`, and `extraction_strength_unseen`.
 
 The original OpenUnlearning documentation follows.
 
