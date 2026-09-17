@@ -44,6 +44,43 @@ Some metrics are reported as both individual points and aggregated values (avera
 
 Other metrics like TOFU's Forget Quality (which is a single score computed over forget v/s retain distributions of Truth Ratio) and MUSE's PrivLeak (which is a single score computed over forget v/s holdout distributions of MIA attack values) aggregate the former metrics into a single score. They return a dictionary which contains `{"agg_value": ...}`.
 
+### Probabilistic discoverable extraction
+
+The `probabilistic_extraction` handler implements Hayes et al.'s
+[(n, p)-discoverable extraction](https://aclanthology.org/2025.naacl-long.469/).
+For a target suffix $z$ and decoder $g_\phi$, it uses teacher forcing to compute
+the exact probability $q_z$ of sampling every target token. It then computes the
+probability of seeing the suffix at least once in $n$ independent queries:
+
+$$P(\text{extract }z\text{ at least once}) = 1 - (1 - q_z)^n.$$
+
+A target is `(n, p)`-extractable when this probability is at least `p`. The
+reported `agg_value` is the fraction of target suffixes that meet that condition.
+Per-example results also include `log_probability`, `single_query_probability`,
+`extraction_probability`, and `is_extractable`.
+
+TOFU and MUSE example configs are provided in
+[`configs/eval/tofu_metrics/probabilistic_extraction.yaml`](../configs/eval/tofu_metrics/probabilistic_extraction.yaml)
+and
+[`configs/eval/muse_metrics/probabilistic_extraction.yaml`](../configs/eval/muse_metrics/probabilistic_extraction.yaml).
+They expose the query budget and extraction threshold, as well as temperature,
+top-k, and nucleus (top-p, called top-q in the paper) sampling controls:
+
+```yaml
+handler: probabilistic_extraction
+num_queries: 100
+probability_threshold: 0.5
+temperature: 1.0
+top_k: 40
+top_p: null
+```
+
+Set both `top_k` and `top_p` to `null` for temperature-only sampling. Set
+`top_k: 1` for greedy decoding. If both truncation controls are set, top-k is
+applied before top-p, matching the usual generation pipeline. To evaluate
+several `(n, p)` operating points, add copies of the metric config under unique
+metric names with different `num_queries` and `probability_threshold` values.
+
 ### Steps to create new metrics:
 
 #### 1. Implement a handler
@@ -270,4 +307,3 @@ simple_evaluate_args:
   system_instruction: null
   apply_chat_template: false
 ```
-
