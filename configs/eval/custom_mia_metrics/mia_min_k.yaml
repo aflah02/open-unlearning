@@ -4,7 +4,7 @@ defaults:
 
 handler: mia_min_k
 batch_size: 8
-k: 40  # Default k value, adjust as needed
+k: 0.4  # Fraction of token scores to select: bottom 40%
 
 datasets:
   forget:

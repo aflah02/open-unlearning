@@ -13,6 +13,7 @@ MIA_PROBABILISTIC_TOP_K=${MIA_PROBABILISTIC_TOP_K:-40}
 MIA_PROBABILISTIC_TOP_P=${MIA_PROBABILISTIC_TOP_P:-null}
 MIA_PROBABILISTIC_PREFIX_LENGTH=${MIA_PROBABILISTIC_PREFIX_LENGTH:-50}
 MIA_PROBABILISTIC_SUFFIX_LENGTH=${MIA_PROBABILISTIC_SUFFIX_LENGTH:-50}
+MIA_PROBABILISTIC_EVAL_LENGTH=${MIA_PROBABILISTIC_EVAL_LENGTH:-128}
 
 if [[ -z "$MIA_GPU_ID" ]]; then
   echo "Usage: $0 <GPU_ID>" >&2
@@ -64,6 +65,18 @@ MIA_LENGTHS=(
   1024
 )
 
+MIA_PROBABILISTIC_LENGTH_FOUND=false
+for MIA_MAX_LENGTH in "${MIA_LENGTHS[@]}"; do
+  if [[ "$MIA_MAX_LENGTH" == "$MIA_PROBABILISTIC_EVAL_LENGTH" ]]; then
+    MIA_PROBABILISTIC_LENGTH_FOUND=true
+    break
+  fi
+done
+if [[ "$MIA_PROBABILISTIC_LENGTH_FOUND" != true ]]; then
+  echo "MIA_PROBABILISTIC_EVAL_LENGTH must be one of: ${MIA_LENGTHS[*]}; got: $MIA_PROBABILISTIC_EVAL_LENGTH" >&2
+  exit 2
+fi
+
 run_mia_task() {
   local model_path=$1
   local max_length=$2
@@ -72,10 +85,19 @@ run_mia_task() {
   local model_tag=${model_name//+/_}
   local step_name=${model_path##*/}
   local task_name="creativity_mia_${MIA_CORPUS}_${model_tag}_${step_name}_len${max_length}"
+  local probabilistic_metric_overrides=()
 
   echo ">>> Running corpus $MIA_CORPUS at length $max_length with model $model_path on GPU $MIA_GPU_ID"
   echo ">>> Task name: $task_name"
-  echo ">>> Probabilistic extraction: n=$MIA_PROBABILISTIC_NUM_QUERIES, p=$MIA_PROBABILISTIC_THRESHOLDS, T=$MIA_PROBABILISTIC_TEMPERATURE, top-k=$MIA_PROBABILISTIC_TOP_K, top-p=$MIA_PROBABILISTIC_TOP_P, prefix=$MIA_PROBABILISTIC_PREFIX_LENGTH, suffix=$MIA_PROBABILISTIC_SUFFIX_LENGTH"
+  if [[ "$max_length" == "$MIA_PROBABILISTIC_EVAL_LENGTH" ]]; then
+    echo ">>> Probabilistic extraction enabled: n=$MIA_PROBABILISTIC_NUM_QUERIES, p=$MIA_PROBABILISTIC_THRESHOLDS, T=$MIA_PROBABILISTIC_TEMPERATURE, top-k=$MIA_PROBABILISTIC_TOP_K, top-p=$MIA_PROBABILISTIC_TOP_P, prefix=$MIA_PROBABILISTIC_PREFIX_LENGTH, suffix=$MIA_PROBABILISTIC_SUFFIX_LENGTH"
+  else
+    probabilistic_metric_overrides+=(
+      '~eval.custom_mia.metrics.probabilistic_extraction_members'
+      '~eval.custom_mia.metrics.probabilistic_extraction_unseen'
+    )
+    echo ">>> Probabilistic extraction disabled; it runs only at length $MIA_PROBABILISTIC_EVAL_LENGTH"
+  fi
 
   CUDA_VISIBLE_DEVICES="$MIA_GPU_ID" "$MIA_PYTHON_BIN" src/eval.py \
     --config-name=eval.yaml \
@@ -91,7 +113,8 @@ run_mia_task() {
     mia_probabilistic_suffix_length="$MIA_PROBABILISTIC_SUFFIX_LENGTH" \
     model=local-llama-1b \
     model.local_model_path="$model_path" \
-    task_name="$task_name"
+    task_name="$task_name" \
+    "${probabilistic_metric_overrides[@]}"
 }
 
 MIA_TOTAL_TASKS=$((${#MIA_MODEL_PATHS[@]} * ${#MIA_LENGTHS[@]}))

@@ -2,6 +2,8 @@
 submit.py
 /saves/
 /saves_512/
+/old_saves/
+/*saves/
 !src/data/__init__.py
 logs/
 unity/

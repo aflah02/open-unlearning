@@ -55,7 +55,11 @@ unseen documents. Probabilistic Discoverable Extraction runs on both groups as
 well. Following Hayes et al., it conditions on the first 50 content tokens,
 scores the subsequent 50-token suffix under top-k sampling with `k=40` and
 `T=1`, and reports a grid over `n=[1,10,100,1000,10000]` and
-`p=[0.1,0.5,0.9,0.99,0.999]`. Override these settings with
+`p=[0.1,0.5,0.9,0.99,0.999]`. Because this metric uses only those 100 content
+tokens, the runner executes it once per model in the 128-token task and removes
+it from the 256, 512, and 1,024-token task configurations. Override the selected
+task length with `MIA_PROBABILISTIC_EVAL_LENGTH`; it must be one of the four
+sweep lengths. Override the metric settings with
 `MIA_PROBABILISTIC_NUM_QUERIES`, `MIA_PROBABILISTIC_THRESHOLDS`,
 `MIA_PROBABILISTIC_TEMPERATURE`, `MIA_PROBABILISTIC_TOP_K`,
 `MIA_PROBABILISTIC_TOP_P`, `MIA_PROBABILISTIC_PREFIX_LENGTH`, and
@@ -64,6 +68,10 @@ member/unseen measurements include:
 `exact_memorization_members`, `exact_memorization_unseen`,
 `extraction_strength_members`, `extraction_strength_unseen`,
 `probabilistic_extraction_members`, and `probabilistic_extraction_unseen`.
+
+`../analyze_results.py` likewise reads probabilistic extraction from length 128
+by default and reports one value per model, split, `n`, and `p`. Pass
+`--probabilistic-length` if the runner's selected task length was overridden.
 
 The original OpenUnlearning documentation follows.
 
