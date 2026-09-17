@@ -1,0 +1,22 @@
+# @package eval.custom_mia.metrics.probabilistic_extraction_members
+defaults:
+  - ../../collator@collators: DataCollatorForSupervisedDatasetwithIndex
+
+handler: probabilistic_extraction
+batch_size: 8
+num_queries: ${mia_probabilistic_num_queries}
+probability_threshold: ${mia_probabilistic_probability_threshold}
+temperature: ${mia_probabilistic_temperature}
+top_k: ${mia_probabilistic_top_k}
+top_p: ${mia_probabilistic_top_p}
+
+datasets:
+  members:
+    handler: CompletionDataset
+    args:
+      hf_args:
+        path: json
+        data_files: "${mia_data_root}/${mia_corpus}/members.jsonl"
+        trust_remote_code: true
+        split: "train"
+      max_length: ${mia_max_length}

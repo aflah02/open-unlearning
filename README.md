@@ -51,9 +51,15 @@ omitting `TASK_INDEX` retains the sequential local sweep.
 The suite runs the older branch's unchanged loss, Min-K, Min-K++,
 gradient-norm, and zlib configurations. It also runs the native Exact
 Memorization and Extraction Strength metrics independently on members and
-unseen documents, producing four mean measurements at every model/length:
+unseen documents. Probabilistic Discoverable Extraction runs on both groups as
+well, using top-k sampling with `k=40`, `T=1`, `n=100`, and `p=0.5` by default.
+Override these settings with `MIA_PROBABILISTIC_NUM_QUERIES`,
+`MIA_PROBABILISTIC_THRESHOLD`, `MIA_PROBABILISTIC_TEMPERATURE`,
+`MIA_PROBABILISTIC_TOP_K`, and `MIA_PROBABILISTIC_TOP_P` when invoking
+`run_mia.sh`. The independent member/unseen measurements include:
 `exact_memorization_members`, `exact_memorization_unseen`,
-`extraction_strength_members`, and `extraction_strength_unseen`.
+`extraction_strength_members`, `extraction_strength_unseen`,
+`probabilistic_extraction_members`, and `probabilistic_extraction_unseen`.
 
 The original OpenUnlearning documentation follows.
 
