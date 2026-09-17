@@ -8,7 +8,6 @@ defaults:
     - forget_verbmem_ROUGE
     - privleak
     - extraction_strength
-    # - probabilistic_extraction
     # - exact_memorization
     # - mia_min_k_plus_plus
     # - mia_min_k
