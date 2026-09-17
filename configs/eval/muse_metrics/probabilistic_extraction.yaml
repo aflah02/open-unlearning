@@ -1,0 +1,22 @@
+# @package eval.muse.metrics.probabilistic_extraction
+defaults:
+  - ../../data/datasets@datasets: MUSE_forget_verbmem
+  - ../../collator@collators: DataCollatorForSupervisedDatasetwithIndex
+
+handler: probabilistic_extraction
+batch_size: 8
+
+# (n, p)-discoverable extraction parameters
+num_queries: 100
+probability_threshold: 0.5
+
+# Decoder g_phi. The paper's primary setting is top-k with k=40 and T=1.
+temperature: 1.0
+top_k: 40
+top_p: null
+
+datasets:
+  MUSE_forget_verbmem:
+    args:
+      hf_args:
+        path: muse-bench/MUSE-${eval.muse.data_split}
